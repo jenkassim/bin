@@ -2,7 +2,9 @@
 - Location of files stored on host : ` /var/lib/docker `
 
 ## Start up service
+```
 $ sudo systemctl start docker
+```
 
 ## Create Dockerfile
 - Reference how to write Dockerfile : https://docs.docker.com/engine/reference/builder/
@@ -53,7 +55,7 @@ CMD ["python", "app.py"]
 `
 
 - Content served in web page: http://0.0.0.0:80 or
-`   
+`
     $ http://localhost:4000
 `
 
@@ -64,23 +66,23 @@ CMD ["python", "app.py"]
 
 ## Run the app in background
 - Run app in background and terminal returns long container ID.
-`
+```
     $ docker run -d -p 4000:80 containername
-    
+
     [
         290e82ae897b62645c5cf0a9f18c0aad15ee2e56865ea6ad476aca209c693bfe
     ]
-`
+```
 
 - Get abbreviated container ID
-`
+```
     $ docker container ls
     [
         CONTAINER ID        IMAGE               COMMAND             CREATED              STATUS              PORTS                  NAMES
 290e82ae897b        demo                "python app.py"     About a minute ago   Up About a minute   0.0.0.0:4000->80/tcp   peaceful_bassi
 
     ]
-`
+```
 
 - Stop background app running
 `
@@ -148,7 +150,7 @@ CMD ["python", "app.py"]
 ### Remove all images from the machine
 `
     $ docker image rm $(docker image ls -a -q)
-
+`
 
 ## Services
 ### Docker Compose
@@ -159,57 +161,63 @@ CMD ["python", "app.py"]
 `
 
 - Require manual installation (check for latest version)
-`
+```
     $ sudo curl -L https://github.com/docker/compose/releases/download/1.19.0-rc2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
     $ chmod +x /usr/local/bin/docker-compose
-`
+```
 
 - Add permission to visudo and ~./bashrc
-`
+```
     - In ~/.bashrc:
     alias docker-compose='sudo /usr/local/bin/docker-compose
 
     - In visudo (/etc/sudoers) :
-    jenna_mk        ALL=(ALL)       NOPASSWD: /usr/bin/docker
-    jenna_mk        ALL=(ALL)       NOPASSWD: /usr/local/bin/docker-compose
-`
+    user        ALL=(ALL)       NOPASSWD: /usr/bin/docker
+    user        ALL=(ALL)       NOPASSWD: /usr/local/bin/docker-compose
+```
 
 - Steps :
 
-(a) Define app's environment with a Dockerfile so it can be reproduced anywhere. Define each service in a Dockerfile.
-(b) Define the services and their relation to each other in the docker-compose.yml file.
-(c) Start the app via docker-compose
+(1) Define app's environment with a Dockerfile so it can be reproduced anywhere. Define each service in a Dockerfile.
+
+(2) Define the services and their relation to each other in the docker-compose.yml file.
+
+(3) Start the app via docker-compose
 
 ### Run App with docker compose
 - Starts Compose and runs your entire app
-`
+```
     $ docker-compose up
-` 
+```
+
 - Start App to run in the background
-`
+```
     $ docker-compose up -d
 
     Then to stop the background app
     $ docker-compose stop
-`
+```
+
 - Stop application by cmd or Ctrl-C in terminal
-`
+```
     $ docker-compose down
-`
+```
+
 - Check for currently running apps
-`
+```
     $ docker-compose ps
-`
+```
+
 - Run one-off commands for services
-`
+```
     $ docker-compose run <service-cmd>
     $ docker-compose run web env
-`
+```
 
 - Removes all containers
-`
+```
     $ docker-compose rm -v
-`
+```
 - Docker-compose command line references : ` https://docs.docker.com/compose/reference/ `
 
 
