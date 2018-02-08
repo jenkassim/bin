@@ -1,6 +1,10 @@
 # Docker
+`/var/lib/docker/image/devicemapper/imagedb/content/sha256`
 - Location of files stored on host : ` /var/lib/docker `
+- Docker Image is an inert, immutable file that's a snapshot of a container.
+- Image are created with the `build` command and produces a container when started with `run`.
 
+# Create Docker Environment
 ## Start up service
 ```
 $ sudo systemctl start docker
@@ -38,40 +42,47 @@ CMD ["python", "app.py"]
 
 ## Requirements file
 - Create requirements file to install into container
+```
+    $ pip freeze > requirements.txt
+```
 
 ## Build the app
 - Be in the directory level that has Dockerfile, requirements.txt and app files
 `   $ docker build -t containername . `
 
 - Check built images
-`
+```
     $ docker images
-`
+```
 
+## Clean-up Docker entirely and start fresh
+- If need to have clean slate of Docker environment, remove the Docker files and restart service
+```
+    $ rm -rf /var/lib/docker
+    $ systemctl restart docker
+```
+
+# Running Docker
 ## Run the app
 - Port 80 is set by Dockerfile EXPOSE variable
-`
+```
     $ docker run -p 4000:80 containername
-`
+```
 
-- Content served in web page: http://0.0.0.0:80 or
-`
-    $ http://localhost:4000
-`
+- Content served in web page: http://0.0.0.0:80 or http://localhost:4000
 
 - Also able to cmd shell to view the same content
 `
     $ curl http://localhost:4000
 `
 
-## Run the app in background
+## Container Commands
+- Containers are instances of an image (runtime object) and encapsulates an environment to run apps.
+- An image can have multiple containers (instances)
+
 - Run app in background and terminal returns long container ID.
 ```
     $ docker run -d -p 4000:80 containername
-
-    [
-        290e82ae897b62645c5cf0a9f18c0aad15ee2e56865ea6ad476aca209c693bfe
-    ]
 ```
 
 - Get abbreviated container ID
@@ -94,30 +105,40 @@ CMD ["python", "app.py"]
     $ docker container kill <Container-ID>
 `
 
-
-## Container Commands
 - List all running containers
-`   $ docker container ls`
+```
+   $ docker container ls
+   $ docker ps
+```
 - List all containers including non running containers
-`   $ docker container ls -a `
+```
+   $ docker container ls -a
+   $ docker ps -a
+```
+
 - Remove all containers
-`   $ docker container rm $(docker container ls -a -q) `
+```
+   $ docker container rm $(docker container ls -a -q) `
+```
 - Remove specific container on machine
-`   $ docker container rm <hash> `
+```
+   $ docker container rm <hash> `
+```
 
 
 
 ## Image Commands
-
 - Export built image to run it elsewhere.
 - A registry is a collection of repos and a repo is a collection of images. The Docker CLI uses Docker's public registry by default
 - List all images on the machine
-`
+```
     $ docker image ls -a
-`
+```
+
 - Inspect images
 `
     $ docker inspect <tag or id>
+    $ docker history <image-id>:latest
 `
 
 
@@ -142,15 +163,33 @@ CMD ["python", "app.py"]
     $ docker run -p 4000:80 username/repository:tag
 `
 
-### Remove local repo docker image
-`
-    $ docker image rm <image id>
-`
+### Remove Docker image
+- Image cannot be removed via id if multiple image of same name, different tag exist. Image will need to be removed via name instead of id.
 
-### Remove all images from the machine
-`
+- To remove local docker image
+```
+    $ docker image rm <image id>
+```
+
+- To remove all images from the machine by image-id
+```
     $ docker image rm $(docker image ls -a -q)
-`
+```
+
+- Image with child(dependent) images cannot be removed, would destroy local build cache. To remove those images manually execute for each individual image:
+```
+    $ docker image ls -a
+    $ docker rmi <image-name>:<tag>
+```
+- To remove all together:
+```
+    $ docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}')
+```
+- Using prune command:
+```
+    $ docker image prune -a
+```
+
 
 ## Services
 ### Docker Compose
@@ -185,6 +224,9 @@ CMD ["python", "app.py"]
 (3) Start the app via docker-compose
 
 ### Run App with docker compose
+- Check is defined port in docker-compose.yml is already running other services and either change the port or stop the service.
+
+
 - Starts Compose and runs your entire app
 ```
     $ docker-compose up
