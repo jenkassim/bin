@@ -68,10 +68,10 @@ CMD ["python", "app.py"]
 ## Run the app
 - Port 80 is set by Dockerfile EXPOSE variable
 ```
-    $ docker run -p 4000:80 containername
+    $ docker run -p 4000:80 <containername>
 
     - Run app in background and terminal returns long container ID.
-    $ docker run -d -p 4000:80 containername
+    $ docker run -d -p 4000:80 <containername>
 ```
 
 - Content served in web page: http://0.0.0.0:80 or http://localhost:4000
@@ -281,18 +281,76 @@ CMD ["python", "app.py"]
 ```
 
 ### Storage driver
+https://docs.docker.com/storage/storagedriver/
 - A storage driver handles the details about the way these layers interact with each other.
 - Each layer stored in its own directory in host local storage aread : `/var/lib/docker/<storage-drive>/layers/`
 
+- Only files to be modified will be copied into the writeable layers. When files in container is modified, the storage driver performs a `copy-on-write` operation.
+
+- For write-heavy apps, do not store data in container, instead use Docker volumes which are independent on the running container.
+
+
+### Data Volumes (DV)
+https://docs.docker.com/storage/volumes/
+- Data written to container that is not stored in a `data volume` will be deleted when container is deleted.
+- Data volume is a directory / file in host filesystem that is mounted directly into a container.
+- Multiple DV can be mounted into a single container
+- Multiple containers can share one or more DV.
+- Location of DV are outside host local storage area
+
+### Start a container with a volume
+- If start container wihout existing volume, Docker will auto create it.
+```
+    $ docker run -d --name <container-name> --mount source=<vol-name>, target=/app nginx:latest
+```
+
+- Verify that volume was created & mounted
+```
+    $ docker inspect <container-name>
+    [
+        "Mounts": [
+            {
+                "Type": "volume",
+                "Name": <vol-name>,
+                "Source": "/var/lib/docker/volumes/<vol-name>/_data",
+                "Destination": "/app",
+                "Driver": "local",
+                "Mode": "",
+                "RW": true,
+                "Propagation": ""
+            }
+        ],
+    ]
+```
+
+- Stop container and remove volume
+```
+    $ docker container stop <container-name>
+    $ docker container rm <container-name>
+    $ docker volume rm <vol-name>
+```
+
+##### Create a Volume
+```
+    $ docker volume create <volume-name>
+```
+##### List Volumes
+```
+    $ docker volume ls
+```
+##### Inpect a volume
+```
+    $ docker volume inspect <volume-name>
+```
+##### Remove a volumne
+```
+    $ docker volume rm <volume-name>
+```
 
 ### Bind mounts
 https://docs.docker.com/engine/admin/volumes/bind-mounts/#start-a-container-with-a-bind-mount
-https://docs.docker.com/storage/storagedriver/
 - To mount host machine's files or directory into a container.
-- The file or directory is referenced by its full or relatives path on the host machine.
-
-### Volume
-- A new directory is created within Docker's storage directory on the host machine
+- Sits outside of Docker area and dependent on host machine.
 
 
 ## Docker with PostgreSQL
