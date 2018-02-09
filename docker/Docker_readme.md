@@ -46,7 +46,7 @@ CMD ["python", "app.py"]
     $ pip freeze > requirements.txt
 ```
 
-## Build the app
+## Create / Build an Image
 - Be in the directory level that has Dockerfile, requirements.txt and app files
 ```
    $ docker build -t <image-name> <dir-to-Dockerfile>
@@ -55,6 +55,8 @@ CMD ["python", "app.py"]
 - Check built images
 ```
     $ docker images
+    or
+    $ docker image ls -a
 ```
 
 ## Clean-up Docker entirely and start fresh
@@ -65,13 +67,14 @@ CMD ["python", "app.py"]
 ```
 
 # Running Docker
-## Run the app
+## Run the container
+- Container is an instance of an image
 - Port 80 is set by Dockerfile EXPOSE variable
 ```
-    $ docker run -p 4000:80 <containername>
+    $ docker run -p 4000:80 <image-name>
 
     - Run app in background and terminal returns long container ID.
-    $ docker run -d -p 4000:80 <containername>
+    $ docker run -d -p 4000:80 <image-name>
 ```
 
 - Content served in web page: http://0.0.0.0:80 or http://localhost:4000
@@ -163,6 +166,7 @@ CMD ["python", "app.py"]
 ##### Pull and run Image from remote repo
 `
     $ docker run -p 4000:80 username/repository:tag
+    Output: http://localhost/
 `
 
 ##### Remove Docker image
@@ -194,6 +198,13 @@ CMD ["python", "app.py"]
 
 
 ## Services
+- Group of containers of the same image:tag
+
+
+
+
+
+
 ### Docker Compose
 - Tool for defining and running multi-container Docker apps.
 - Uses a YAML file to configure apps services and create/start all services from configuration.
@@ -329,6 +340,9 @@ https://docs.docker.com/storage/volumes/
     $ docker container rm <container-name>
     $ docker volume rm <vol-name>
 ```
+
+### Start a service with volumes
+-
 
 ##### Create a Volume
 ```
