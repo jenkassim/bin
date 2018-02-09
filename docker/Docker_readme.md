@@ -85,7 +85,7 @@ CMD ["python", "app.py"]
 - Containers are instances of an image (runtime object) and encapsulates an environment to run apps.
 - An image can have multiple containers (instances)
 
-- Get abbreviated container ID
+##### Get abbreviated container ID
 ```
     $ docker container ls
     [
@@ -117,13 +117,13 @@ CMD ["python", "app.py"]
 ```
 
 - Remove all containers
-```
-   $ docker container rm $(docker container ls -a -q) `
-```
+`
+   $ docker container rm $(docker container ls -a -q)
+`
 - Remove specific container on machine
-```
-   $ docker container rm <hash> `
-```
+`
+   $ docker container rm <hash>
+`
 
 
 
@@ -141,39 +141,42 @@ CMD ["python", "app.py"]
     $ docker history <image-id>:latest
 `
 
-### Login with DockerID
+##### Repository Images
+- Login with DockerID :
 `   $ docker login `
+- Pull an image from a repo :
+`   $ docker pull `
 
-### Tag the image
+##### Tag the image
 - Local image with a repo on a registry : ` username/repository:tag `
 - Tag is used to give images a versioning.
 `
     $ docker tag <image> username/repository:tag
 `
 
-### Publish the image
+##### Publish the image
 - Upload tagged image to the repo
 `
     $ docker push username/repository:tag
 `
 
-### Pull and run Image from remote repo
+##### Pull and run Image from remote repo
 `
     $ docker run -p 4000:80 username/repository:tag
 `
 
-### Remove Docker image
+##### Remove Docker image
 - Image cannot be removed via id if multiple image of same name, different tag exist. Image will need to be removed via name instead of id.
 
 - To remove local docker image
-```
+`
     $ docker image rm <image id>
-```
+`
 
 - To remove all images from the machine by image-id
-```
+`
     $ docker image rm $(docker image ls -a -q)
-```
+`
 
 - Image with child(dependent) images cannot be removed, would destroy local build cache. To remove those images manually execute for each individual image:
 ```
@@ -181,13 +184,13 @@ CMD ["python", "app.py"]
     $ docker rmi <image-name>:<tag>
 ```
 - To remove all together:
-```
+`
     $ docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}')
-```
+`
 - Using prune command:
-```
+`
     $ docker image prune -a
-```
+`
 
 
 ## Services
@@ -235,7 +238,7 @@ CMD ["python", "app.py"]
 ```
     $ docker-compose up -d
 
-    Then to stop the background app
+    - Then to stop the background app
     $ docker-compose stop
 ```
 
@@ -262,12 +265,11 @@ CMD ["python", "app.py"]
 - Docker-compose command line references : ` https://docs.docker.com/compose/reference/ `
 
 
-### Images and layers
+## Images and layers
 - Image is built up from series of layers, each layer represents an instruction in image Dockerfile.
 - New container adds a writeable layer on top of the underlying image layers, called "container layer". Any changes made to running container ( add / modify / delete files) are written to the container layer.
 - Deleting a container removes the container layer but the underlying image remains unchanged.
 - Each container has its own container layer, multiple containers can share access to the same underlying image and have their own data state.
-- A storage driver handles the details about the way these layers interact with each other.
 
 - Get approx size of container
 ```
@@ -277,6 +279,11 @@ CMD ["python", "app.py"]
         virtual size : read-only image data used by container + writeable layer size
     ]
 ```
+
+### Storage driver
+- A storage driver handles the details about the way these layers interact with each other.
+- Each layer stored in its own directory in host local storage aread : `/var/lib/docker/<storage-drive>/layers/`
+
 
 ### Bind mounts
 https://docs.docker.com/engine/admin/volumes/bind-mounts/#start-a-container-with-a-bind-mount
