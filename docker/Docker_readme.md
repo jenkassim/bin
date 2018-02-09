@@ -48,7 +48,9 @@ CMD ["python", "app.py"]
 
 ## Build the app
 - Be in the directory level that has Dockerfile, requirements.txt and app files
-`   $ docker build -t containername . `
+```
+   $ docker build -t <image-name> <dir-to-Dockerfile>
+```
 
 - Check built images
 ```
@@ -67,6 +69,9 @@ CMD ["python", "app.py"]
 - Port 80 is set by Dockerfile EXPOSE variable
 ```
     $ docker run -p 4000:80 containername
+
+    - Run app in background and terminal returns long container ID.
+    $ docker run -d -p 4000:80 containername
 ```
 
 - Content served in web page: http://0.0.0.0:80 or http://localhost:4000
@@ -79,11 +84,6 @@ CMD ["python", "app.py"]
 ## Container Commands
 - Containers are instances of an image (runtime object) and encapsulates an environment to run apps.
 - An image can have multiple containers (instances)
-
-- Run app in background and terminal returns long container ID.
-```
-    $ docker run -d -p 4000:80 containername
-```
 
 - Get abbreviated container ID
 ```
@@ -140,7 +140,6 @@ CMD ["python", "app.py"]
     $ docker inspect <tag or id>
     $ docker history <image-id>:latest
 `
-
 
 ### Login with DockerID
 `   $ docker login `
@@ -263,9 +262,25 @@ CMD ["python", "app.py"]
 - Docker-compose command line references : ` https://docs.docker.com/compose/reference/ `
 
 
+### Images and layers
+- Image is built up from series of layers, each layer represents an instruction in image Dockerfile.
+- New container adds a writeable layer on top of the underlying image layers, called "container layer". Any changes made to running container ( add / modify / delete files) are written to the container layer.
+- Deleting a container removes the container layer but the underlying image remains unchanged.
+- Each container has its own container layer, multiple containers can share access to the same underlying image and have their own data state.
+- A storage driver handles the details about the way these layers interact with each other.
+
+- Get approx size of container
+```
+    $ docker ps -s
+    [
+        size         : on disk used for writable layer of each container
+        virtual size : read-only image data used by container + writeable layer size
+    ]
+```
 
 ### Bind mounts
 https://docs.docker.com/engine/admin/volumes/bind-mounts/#start-a-container-with-a-bind-mount
+https://docs.docker.com/storage/storagedriver/
 - To mount host machine's files or directory into a container.
 - The file or directory is referenced by its full or relatives path on the host machine.
 
