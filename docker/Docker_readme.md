@@ -102,12 +102,10 @@ CMD ["python", "app.py"]
 `
     $ docker container stop <Container-ID>
 `
-
 - Kill background app running
 `
     $ docker container kill <Container-ID>
 `
-
 - List all running containers
 ```
    $ docker container ls
@@ -119,6 +117,10 @@ CMD ["python", "app.py"]
    $ docker ps -a
 ```
 
+- Stop all running containers
+`
+    $ docker stop $(docker ps -aq)
+`
 - Remove all containers
 `
    $ docker container rm $(docker container ls -a -q)
@@ -128,7 +130,13 @@ CMD ["python", "app.py"]
    $ docker container rm <hash>
 `
 
+### Check for host running services
+```
+    $ sudo service <service> status
+    $ sudo service postgresql status
 
+    $ ps aux
+```
 
 ## Image Commands
 - Export built image to run it elsewhere.
@@ -171,6 +179,7 @@ CMD ["python", "app.py"]
 
 ##### Remove Docker image
 - Image cannot be removed via id if multiple image of same name, different tag exist. Image will need to be removed via name instead of id.
+- Remove created containers before removing Images used in the containers
 
 - To remove local docker image
 `
@@ -198,11 +207,8 @@ CMD ["python", "app.py"]
 
 
 ## Services
-- Group of containers of the same image:tag
-
-
-
-
+- A service only runs one image but codifies the way it is run - what ports to use, how many container replicas, etc.
+- Service are defined via `docker-compose.yml` file.
 
 
 ### Docker Compose
@@ -212,7 +218,7 @@ CMD ["python", "app.py"]
     https://docs.docker.com/compose/compose-file/#dockerfile
 `
 
-- Require manual installation (check for latest version)
+##### Require manual installation (check for latest version)
 ```
     $ sudo curl -L https://github.com/docker/compose/releases/download/1.19.0-rc2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
     $ chmod +x /usr/local/bin/docker-compose
@@ -365,20 +371,5 @@ https://docs.docker.com/storage/volumes/
 https://docs.docker.com/engine/admin/volumes/bind-mounts/#start-a-container-with-a-bind-mount
 - To mount host machine's files or directory into a container.
 - Sits outside of Docker area and dependent on host machine.
-
-
-## Docker with PostgreSQL
-
-
-
-
-
-
-
-
-
-
-
-
 
 
