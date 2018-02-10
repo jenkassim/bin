@@ -247,8 +247,15 @@ CMD ["python", "app.py"]
 
 
 - Starts Compose and runs your entire app
+- Creates a new container for app
 ```
     $ docker-compose up
+```
+
+- Start / Stop app in existing containers
+```
+    $ docker-compose start
+    $ docker-compose stop
 ```
 
 - Start App to run in the background
@@ -281,6 +288,36 @@ CMD ["python", "app.py"]
 ```
 - Docker-compose command line references : ` https://docs.docker.com/compose/reference/ `
 
+
+## Docker-compose file definition
+##### Image
+- Image name/repo, if not found on local machine Docker will look for it in Docer Hub and automatically downloads.
+
+##### Environment
+- Sets additional environment variables (overwrites existing ones) when container starts
+
+##### Working_dir
+- Cmd to do a cd to working_dir path when container starts
+
+##### Command
+- Runs whatever command specified when container starts.
+
+##### Volumes
+- Map a path from local machine to Docker container. Some examples of paths might be mapped are code repo directory, database files, log directories, etc.
+- Changes inside containers which aren't mapped to host will disappear once containers are stopped.
+
+##### Ports
+- Option to expose container ports. Also can specify port forwarding from host machine to container.
+- E.g: "8000:80" will forward port 8000 of host to port 80 of container.
+
+##### Links
+- Define other containers that the service links to.
+- Used to start a network communication between db container and web-server container.
+- Linked services will be reachable at the hostname identical to the alias, or the service name if no alias was specified.
+- E.g: When connecting to a db, localhost port will be fixed but container port will change everytime restart / remove container. Link can be use to make sure db is always connected even though container port is unknown.
+
+##### Depends_on
+- Start services in dependency order. All Depends_on services will be created / started before its own service.
 
 ## Images and layers
 - Image is built up from series of layers, each layer represents an instruction in image Dockerfile.
