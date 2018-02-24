@@ -1,8 +1,37 @@
 # Docker
+# Table of Content
+## Create Docker Environment
+- [Start up service](#start-up-service)
+- [Create Dockerfile](#create-dockerfile)
+- [Requirements file](#requirements-file)
+- [Create / Build an Image](#create-/-build-an-image)
+- [Check running host services](#check-running-host-services)
+- [Check status](#check-status)
+
+## Running Docker
+- [Run the container](#run-the-container)
+- [Container Commands](#container-commands)
+- [Image Commands](#image-commands)
+
+## Services
+- [Docker Compose](#docker-compose)
+- [Run Docker Compose](#run-docker-compose)
+- [Storage driver](#storage-driver)
+- [Data Volumes](#data-volumes)
+- [Bind Mounts](#bind-mounts)
+
+## Clean up Docker Environment
+- [Clean-up Docker entirely and start fresh](#cleanup-to-freshstart)
+- [Prune Containers](#prune-Containers)
+- [Prune Images](#prune-Images)
+- [Prune Everything](#prune-Everything)
+
+
 `/var/lib/docker/image/devicemapper/imagedb/content/sha256`
 - Location of files stored on host : ` /var/lib/docker `
 - Docker Image is an inert, immutable file that's a snapshot of a container.
 - Image are created with the `build` command and produces a container when started with `run`.
+- Images are bound to containers, so remove containers before removing images
 
 # Create Docker Environment
 ## Start up service
@@ -59,11 +88,48 @@ CMD ["python", "app.py"]
     $ docker image ls -a
 ```
 
-## Clean-up Docker entirely and start fresh
+## Cleanup to freshstart
 - If need to have clean slate of Docker environment, remove the Docker files and restart service
 ```
     $ rm -rf /var/lib/docker
     $ systemctl restart docker
+```
+
+## Check for host running services
+- If host has services running on the same port as Docker defined ports, need to stop host services. (Or change Docker setting port)
+- Unix check for running services
+```
+    $ sudo service <service> status
+    $ sudo service postgresql status
+
+    $ ps aux
+```
+- Stop running services
+```
+    $ sudo service <service> stop
+```
+
+## Check status
+- Check for current running containers
+```
+    $ docker container ls
+    $ docker ps
+```
+- Check for all available containers
+```
+    $ docker container ls -a
+    $ docker ps -a
+```
+
+- Check for current running images
+```
+    $ docker image ls
+```
+
+- Check for all available images on machine
+```
+    $ docker image ls -a
+    $ docker images
 ```
 
 # Running Docker
@@ -75,6 +141,9 @@ CMD ["python", "app.py"]
 
     - Run app in background and terminal returns long container ID.
     $ docker run -d -p 4000:80 <image-name>
+
+    - Run app with volume connected
+    $ docker run -d -p 8888:8888 -v <host-directory>:<container-directory>
 ```
 
 - Content served in web page: http://0.0.0.0:80 or http://localhost:4000
@@ -106,40 +175,22 @@ CMD ["python", "app.py"]
 `
     $ docker container kill <Container-ID>
 `
-- List all running containers
-```
-   $ docker container ls
-   $ docker ps
-```
-- List all containers including non running containers
-```
-   $ docker container ls -a
-   $ docker ps -a
-```
 
 - Stop all running containers
-`
-    $ docker stop $(docker ps -aq)
-`
-- Remove all containers
-`
-   $ docker container rm $(docker container ls -a -q)
-`
-- Remove specific container on machine
-`
-   $ docker container rm <hash>
-`
-
-### Check for host running services
 ```
-    $ sudo service <service> status
-    $ sudo service postgresql status
-
-    $ ps aux
+    $ docker stop $(docker ps -aq)
+```
+- Remove all containers
+```
+   $ docker container rm $(docker container ls -a -q)
+```
+- Remove specific container on machine
+```
+   $ docker container rm <hash>
 ```
 
 ## Image Commands
-- Export built image to run it elsewhere.
+- Built Images can be exported to run it elsewhere.
 - A registry is a collection of repos and a repo is a collection of images. The Docker CLI uses Docker's public registry by default
 - List all images on the machine
 ```
@@ -147,16 +198,22 @@ CMD ["python", "app.py"]
 ```
 
 - Inspect images
-`
+```
     $ docker inspect <tag or id>
     $ docker history <image-id>:latest
-`
+```
 
 ##### Repository Images
 - Login with DockerID :
 `   $ docker login `
 - Pull an image from a repo :
 `   $ docker pull `
+
+##### Pull and run Image from remote repo
+```
+    $ docker run -p 4000:80 username/repository:tag
+    Output: http://localhost/
+```
 
 ##### Tag the image
 - Local image with a repo on a registry : ` username/repository:tag `
@@ -169,12 +226,6 @@ CMD ["python", "app.py"]
 - Upload tagged image to the repo
 `
     $ docker push username/repository:tag
-`
-
-##### Pull and run Image from remote repo
-`
-    $ docker run -p 4000:80 username/repository:tag
-    Output: http://localhost/
 `
 
 ##### Remove Docker image
@@ -242,17 +293,17 @@ CMD ["python", "app.py"]
 
 (3) Start the app via docker-compose
 
-### Run App with docker compose
+### Run Docker Compose
 - Check is defined port in docker-compose.yml is already running other services and either change the port or stop the service.
 
 
 - Starts Compose and runs your entire app
-- Creates a new container for app
+- Creates a new container for app with each up command
 ```
     $ docker-compose up
 ```
 
-- Start / Stop app in existing containers
+- Use to Start / Stop app in existing containers(avoid duplicate containers for same image built)
 ```
     $ docker-compose start
     $ docker-compose stop
@@ -409,4 +460,39 @@ https://docs.docker.com/engine/admin/volumes/bind-mounts/#start-a-container-with
 - To mount host machine's files or directory into a container.
 - Sits outside of Docker area and dependent on host machine.
 
+## CleanUp Docker
+- Run Docker's garbage collection
+### Prune Containers
+- When containers are stopped, it's not automatically removed unless used `--rm` flag.
+```
+    $ docker container prune
+```
 
+### Prune Images
+- Clean up unused images.
+- Only cleans up <b>dangling</b> images, one that is not tagged and not referenced by any container.
+```
+    $ docker image prune
+```
+
+- To remove images which are not used by existing containers
+- Also able to limit filtered expression.
+```
+    $ docker image prune -a
+    $ docker image prune -a --filter "until=24h"
+        - prune images created more than 24hours ago
+```
+
+### Prune Volumes
+- Volumes can be used by one or more containers and takes up space on Docker host. Volumes are never removed automatically.
+```
+    $ docker volume prune
+```
+- Reference : https://docs.docker.com/engine/reference/commandline/volume_prune/
+
+### Prune Everything
+- Prunes everything including volume(> v17.06.1) if specified.
+```
+    $ docker system prune
+    $ docker system prune --volumes
+```
