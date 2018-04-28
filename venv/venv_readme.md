@@ -1,34 +1,36 @@
-#
 # Python How-Tos
-#http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/
-#https://developer.fedoraproject.org/start/sw/web-app/django.html
-#https://virtualenvwrapper.readthedocs.io/en/latest/
 
-Python PATH
-/usr/lib/python2.x/site-packages/
-/usr/bin/python*
+### References :
+- http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/
+- https://developer.fedoraproject.org/start/sw/web-app/django.html
+- https://virtualenvwrapper.readthedocs.io/en/latest/
 
-Unix Python installed
+#### Python PATH
+- /usr/lib/python2.x/site-packages/
+- /usr/bin/python*
+
+#### Unix Python installed
 - Alternatives : sudo alternatives --config python
 
-Install pip packages on ~/
+#### Install pip packages on ~/
 - sudo dnf install python34-setuptools
 - sudo python3 -m pip install pylint
 
-Freeze current state of env packages
-- pip freeze > requirements.txt
+#### Freeze current state of env packages
+- `pip freeze > requirements.txt`
 
-Re-install env with saved staticfiles
-- pip install -r requirements.txt
+#### Re-install env with saved staticfiles
+- `pip install -r requirements.txt`
 
 =======================
 
 ## A) Use mkvirtual environment:
-#### Installation
+### Installation
 This method uses the virtualenvwrapper to create multiple env.
-Note: Should be installed into same global site-packages where virtualenv is installed (ie NOT within a virtualenv) but I didnt do this due to multiple alternatives on global site packages
+Note: Should be installed into same global site-packages where virtualenv is installed (ie NOT within a virtualenv)
 
 ```
+    $ sudo dnf install python-virtualenvwrapper
     $ pip install virtualwrapper
 ```
 
@@ -43,7 +45,7 @@ Note: Should be installed into same global site-packages where virtualenv is ins
 - Always source after changes to .bashrc to run the script
 - Check installed packages : lssitepackagesvirtu
 
-#### Setup
+### Create venv
 - Create virt env in folder $HOME/bin/venv/
 ```
     $ export PROJECT_HOME=<proj dir>
@@ -65,23 +67,23 @@ Note: Should be installed into same global site-packages where virtualenv is ins
 
 
 ## B) Setup Virtual Environment venv
+### Installation
+```
+    $ sudo dnf install python-virtualenv
+```
 
 #### Setup
-    - Specifies which version of python to be installed
+- Specifies which version of python to be installed
 ```
     $ mkdir <folder>
     $ virtualenv -p /usr/bin/python3.6 <venv-name>
 ```
+
 - Add python env var in ~/.bashrc
 ```
     $ export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3.6
 ```
 
-- Or use std default templates located below and copy to dev folder and rename
-```
-    ~/bin/venv/python3_6
-    ~/bin/venv/python2_7
-```
 
 #### Activate / De-activate
 - To activate:
@@ -95,6 +97,9 @@ Note: Should be installed into same global site-packages where virtualenv is ins
 
 ## Basic installation packages :
 - pip install requests
+```
+    $ python -m pip install --upgrade pip
+```
 
 
 

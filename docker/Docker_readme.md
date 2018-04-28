@@ -22,9 +22,9 @@
 
 ## Clean up Docker Environment
 - [Clean-up Docker entirely and start fresh](#cleanup-to-freshstart)
-- [Prune Containers](#prune-Containers)
-- [Prune Images](#prune-Images)
-- [Prune Everything](#prune-Everything)
+- [Prune Containers](#prune-containers)
+- [Prune Images](#prune-images)
+- [Prune Everything](#prune-everything)
 
 
 `/var/lib/docker/image/devicemapper/imagedb/content/sha256`
@@ -176,6 +176,11 @@ CMD ["python", "app.py"]
     $ docker container kill <Container-ID>
 `
 
+- Kill all running containers
+```
+    $ docker kill `docker ps -aq`
+```
+
 - Stop all running containers
 ```
     $ docker stop $(docker ps -aq)
@@ -183,6 +188,7 @@ CMD ["python", "app.py"]
 - Remove all containers
 ```
    $ docker container rm $(docker container ls -a -q)
+   $ docker-compose down
 ```
 - Remove specific container on machine
 ```
@@ -269,7 +275,7 @@ CMD ["python", "app.py"]
     https://docs.docker.com/compose/compose-file/#dockerfile
 `
 
-##### Require manual installation (check for latest version)
+##### Docker-Compose manual installation (check for latest version)
 ```
     $ sudo curl -L https://github.com/docker/compose/releases/download/1.19.0-rc2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
     $ chmod +x /usr/local/bin/docker-compose
@@ -327,10 +333,16 @@ CMD ["python", "app.py"]
     $ docker-compose ps
 ```
 
-- Run one-off commands for services
+- Run one-off commands for services(will create a new container for cmd)
 ```
     $ docker-compose run <service-cmd>
     $ docker-compose run web env
+```
+
+- Run arbitrary commands in existing services containers(avoid duplicated containers)
+```
+    $ docker-compose exec <service-cmd>
+    $ docker-compose exec web python manage.py migrate
 ```
 
 - Removes all containers
@@ -338,6 +350,10 @@ CMD ["python", "app.py"]
     $ docker-compose rm -v
 ```
 - Docker-compose command line references : ` https://docs.docker.com/compose/reference/ `
+
+#### Docker-Compose Run / Exec
+- `docker run` : Manipulates <b>images</b> that exists or accessible from localhost. A temp docker container is created and stopped after the command has finished running.
+- `docker exec` : Operates an existing <b>container</b>
 
 
 ## Docker-compose file definition
@@ -454,6 +470,10 @@ https://docs.docker.com/storage/volumes/
 ```
     $ docker volume rm <volume-name>
 ```
+#####Stop container & Remove volume and its data container
+```
+    $ docker-compose down -v
+```
 
 ### Bind mounts
 https://docs.docker.com/engine/admin/volumes/bind-mounts/#start-a-container-with-a-bind-mount
@@ -471,6 +491,8 @@ https://docs.docker.com/engine/admin/volumes/bind-mounts/#start-a-container-with
 ### Prune Images
 - Clean up unused images.
 - Only cleans up <b>dangling</b> images, one that is not tagged and not referenced by any container.
+- Dangling images are usually caused by intermediate images used during update / re-built of images (docker build or pull)
+- Dangling images have tag `<none>:<none>` in docker images -a
 ```
     $ docker image prune
 ```
@@ -483,6 +505,11 @@ https://docs.docker.com/engine/admin/volumes/bind-mounts/#start-a-container-with
         - prune images created more than 24hours ago
 ```
 
+- Clean dangling images
+```
+    $ docker images -f "dangling=true" -q
+    $ docker rmi $(docker images -f "dangling=true" -q)
+```
 ### Prune Volumes
 - Volumes can be used by one or more containers and takes up space on Docker host. Volumes are never removed automatically.
 ```
