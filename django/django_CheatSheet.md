@@ -61,6 +61,7 @@
 ##### Create Project
 ```
     $ django-admin startproject <project-name>
+    $ docker-compose exec web django-admin.py startproject <project>
 ```
 
 #### Docker
@@ -72,8 +73,16 @@
 ```
 - Move django files and folders so that manage.py is in the same folder dir as docker-compose.yml file
 
+- Set Postgresql env settings
+```
+    $ POSTGRES_PASSWORD="PasswordHere"
+    $ POSTGRES_USER="postgres"
+    $ echo $POSTGRES_PASSWORD   PasswordHere
+    $ echo $POSTGRES_USER       postgres
+```
+
 ##### Start / Run
-- Note : docker has different commands for different purposes. Use `up` for startup of services. Once services has started, to execute cmd within services, use `exec`. To start a separate service(one-off), use `run`
+- Note : docker has different commands for different purposes. Use `up` for startup of services. Once services has started, to execute cmd within services, use `exec`. To start a separate service(one-off), use `run` to create separate individual container.
 
 - Run dc command from top level dir of project
 ```
@@ -107,6 +116,7 @@
     $ docker-compose run <web> python manage.py runserver 8080
 ```
 [^](#table-of-content)
+
 ### Create Superuser
 - For newly created projects, need to create a superuser and re-initialize the db.
 - Create an admin user for the DB:
@@ -118,6 +128,7 @@
     $ python manage.py migrate
 ```
 [^](#table-of-content)
+
 ### Create App
 - An App is a subdirectory of a project.
 - E.g: A project is a site that has multiple apps for blog, ecommerce, etc
@@ -134,12 +145,17 @@
     ]
 ```
 
-- Create tables for models in DB:
+- Create tables for models in DB
+- Whenever changes are made to models.py, migration needs to be executed:
 ```
     $ python manage.py makemigrations <app-name>
     $ python manage.py migrate <app-name>
 ```
+
+- Add new App to url in <project/url.py>
+
 [^](#table-of-content)
+
 ### Configure Settings
 ##### Static files
 - Add static root directory
@@ -425,3 +441,16 @@ In urls.py:
     {{ object.image.url}}
 ```
 [^](#table-of-content)
+
+
+### Errors
+```
+    "django_session" does not exist
+```
+- Solution: run
+```
+    $ python manage.py migrate
+    $ python manage.py syncdb
+    $ python manage.py migrate sessions
+```
+

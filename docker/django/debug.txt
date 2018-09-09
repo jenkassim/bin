@@ -1,0 +1,135 @@
+version: '2'
+
+volumes:
+  # for persistence between restarts
+  postgres_data: {}
+
+services:
+  db:
+    image: postgres:latest
+    volumes:
+      - postgres_data:/var/lib/pgsql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports: #make db accessible locally
+      - "127.0.0.1:5432:5432"
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  redis:
+    image: redis:3.2.9
+    ports: #make redis accessible locally
+      - "127.0.0.1:6379:6379"
+
+
+==============================================================
+version: '2'
+
+volumes:
+  # for persistence between restarts
+  postgres_data: {}
+
+services:
+  web:
+    build: .
+    command: python3 manage.py runserver 8080
+    expose:
+      - "8000"
+    links:
+      - postgres:postgres
+      - redis:redis
+    env_file: env
+    volumes:
+      - .:/data
+
+  postgres:
+    image: postgres:latest
+    volumes:
+      - postgres_data:/var/lib/pgsql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports: #make db accessible locally
+      - "127.0.0.1:5432:5432"
+  redis:
+    image: redis:3.2.9
+    ports: #make redis accessible locally
+      - "127.0.0.1:6379:6379"
+
+
+=============================================================
+version: '2'
+
+volumes:
+  # for persistence between restarts
+  postgres_data: {}
+
+services:
+  db:
+    image: postgres:latest
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports: #make db accessible locally
+      - "127.0.0.1:5432:5432"
+  redis:
+    image: redis:3.2.9
+    ports: #make redis accessible locally
+      - "127.0.0.1:6379:6379"
+
+==============================================================
+
+web:
+  build: ./web/
+  expose:
+    - "8000"
+  links:
+    - postgres:postgres
+    - redis:redis
+  env_file: env
+  volumes:
+    - ./web:/data/web
+  command: /usr/bin/gunicorn mydjango.wsgi:application -w 2 -b :8000
+
+  nginx:
+  build: ./nginx/
+  ports:
+    - "80:80"
+  volumes_from:
+    - web
+  links:
+    - web:web
+
+postgres:
+  image: postgres:latest
+  volumes_from:
+    - data
+  volumes:
+    - ./postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    - ./backups/postgresql:/backup
+  env_file:
+    - env
+  expose:
+    - "5432"
+
+redis:
+  image: redis:latest
+  expose:
+    - "6379"
+
+data:
+  image: alpine
+  volumes:
+    - /var/lib/postgresql
+  command: "true"
