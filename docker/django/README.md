@@ -1,4 +1,5 @@
-# Docker Installation Steps: https://www.stavros.io/posts/how-deploy-django-docker/
+# Docker Installation 
+Tutorial: https://www.stavros.io/posts/how-deploy-django-docker/
 
 - Stop other postgresql ports in use:
 ```
