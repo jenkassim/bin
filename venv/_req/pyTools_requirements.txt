@@ -23,7 +23,7 @@ jupyter-console==5.2.0
 jupyter-core==4.4.0
 Markdown==2.6.9
 MarkupSafe==1.0
-mistune==0.8
+The Requests package through 2.19.1 before 2018-09-14 for Python sends an HTTP Authorization header to an http URI upon receiving a same-hostname https-to-http redirect, which makes it easier for remote attackers to discover credentials by sniffing the network.mistune==0.8
 nbconvert==5.3.1
 nbformat==4.4.0
 notebook==5.4.1
@@ -38,7 +38,7 @@ Pygments==2.2.0
 python-dateutil==2.6.1
 pyzmq==16.0.3
 qtconsole==4.3.1
-requests==2.18.4
+requests==2.20.0
 simplegeneric==0.8.1
 six==1.11.0
 terminado==0.6

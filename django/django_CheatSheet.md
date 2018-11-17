@@ -1,36 +1,43 @@
 # Django Cheat Sheet
-## Table Of Content
+# Table Of Content
    * [Overview](#overview)
    * [Highlight commands](#highlight-commands)
 
-### Installation
-* [Environment Setup](#envsetup)
+## Installation
+* [Environment Setup](#environment-setup)
     * [Venv](#venv)
     * [Docker](#docker)
-* [Create Project](#create-project)
-* [Run Server](#run-server)
-* [Create Superuser](#create-superuser)
-* [Create App](#create-app)
-* [Configure Settings](#configure-settings)
-* [Database](#database)
 
-### Development
+## Setup
+* [Start / Run](#Start-/-Run)
+    * [Run Server](#run-server)
+    * [Create Superuser](#Create-Superuser-&-Migrate-DB)
+    * [Create App](#create-app)
+    * [Configure Settings](#configure-settings)
+    * [Database Settings](#database-settings)
+
+
+## Development
 * [Django Files and Components](#django-files-and-components)
     * [Project files](#project-files)
         * [manage.py](#managepy)
         * [settings.py](#settingspy)
+        * [wsgi.py](#wsgipy)
         * [urls.py](#urlspy)
+    * [App Files](#app-files)
+        * [urls.py](#urlspy)
+        * [admin.py](#adminpy)
         * [models.py](#modelspy)
         * [views.py](#viewspy)
-            * [Function Based Views](#function-based-views)
-            * [Class Based Views](#class-based-views)
-            * [Generic Based Views](#generic-based-views)
-        * [init.py](#initpy)
-        * [wsgi.py](#wsgipy)
+    * [Function Based Views](#function-based-views)
+    * [Class Based Views](#class-based-views)
+    * [Generic Based Views](#generic-based-views)
     * [Templates](#templates)
         * [Create base template](#create-base-template)
         * [Django to html syntax](#django-to-html-syntax)
-* [Querysets](#querysets)
+* [Django Models](#django-models)
+    * [Querysets](#querysets)
+    * [Query objects](#query-objects)
 * [Misc](#misc)
     * [Additional python libraries to use:](#additional-python-libraries-to-use)
 
@@ -53,15 +60,14 @@
 ### Environment Setup
 - Lots of methods to use, either virtual environment or use a containers such as Docker with Docker-compose
 #### Venv
+- Install
 ```
     $ pip install django
     $ python -m django --version
 ```
-
-##### Create Project
+- Create Project
 ```
     $ django-admin startproject <project-name>
-    $ docker-compose exec web django-admin.py startproject <project>
 ```
 
 #### Docker
@@ -71,8 +77,15 @@
 ```
     $ docker-compose exec web django-admin startproject <project>
 ```
+
+- In docker, django-admin creates files ownership to root. Change to user:
+```
+    $ sudo chown -R $USER:$USER
+```
 - Move django files and folders so that manage.py is in the same folder dir as docker-compose.yml file
 
+
+##### Database Settings
 - Set Postgresql env settings
 ```
     $ POSTGRES_PASSWORD="PasswordHere"
@@ -81,26 +94,19 @@
     $ echo $POSTGRES_USER       postgres
 ```
 
-##### Start / Run
-- Note : docker has different commands for different purposes. Use `up` for startup of services. Once services has started, to execute cmd within services, use `exec`. To start a separate service(one-off), use `run` to create separate individual container.
+- Update settings.py with DB settings (take note of port used)
+```
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'postgres',
+            'USER': 'postgres',
+            'HOST': 'db',
+            'PORT': 5432,
+        }
+}
 
-- Run dc command from top level dir of project
 ```
-    $ docker-compose up / start
-```
-- To execute command within same service use `exec` instead of `run`
-```
-    $ docker-compose run web python manage.py runserver 8080
-    $ docker-compose exec web python manage.py runserver 8000
-    $ docker-compose exec web python manage.py migrate
-```
-
-- In docker, django-admin creates files ownership to root. Change to user:
-```
-    $ sudo chown -R $USER:$USER
-```
-
-##### Database settings
 - When creating database, take note of the port number used. If conflicting with local env port number, stop local service before running docker.
 - Stop local env service to release port(5432)
 ```
@@ -108,26 +114,51 @@
 ```
 [^](#table-of-content)
 
+## Start / Run
+### Docker
+- Note : docker has different commands for different purposes. Use `up` for startup of services. Once services has started, to execute cmd within services, use `exec`. To start a separate service(one-off), use `run` to create separate individual container.
+
+- Run dc command from top level dir of project
+```
+    $ docker-compose up / start
+```
+
+- To execute command within same service use `exec` instead of `run`
+```
+    $ docker-compose run web python manage.py runserver 8080
+    $ docker-compose exec web python manage.py runserver 8000
+    $ docker-compose exec web python manage.py migrate
+```
+
+- All other commands are similar to venv environment, with the execption of having docker-compose command at the front.
+
+[^](#table-of-content)
+
 ### Run Server
 - In the directory of `manage.py`:
 ```
-    $ python manage.py runserver 8080
-    $ python manage.py runserver 127.0.0.1:8080
-    $ docker-compose run <web> python manage.py runserver 8080
+    $ python manage.py run[^](#table-of-content)server 8080
+    $ python manage.py run[^](#table-of-content)server 127.0.0.1:8080
+    $ docker-compose exec [^](#table-of-content)web python manage.py runserver 8080
 ```
 [^](#table-of-content)
 
-### Create Superuser
+
+### Create Superuser & Migrate DB
 - For newly created projects, need to create a superuser and re-initialize the db.
 - Create an admin user for the DB:
 ```
     $ python manage.py createsuperuser
 ```
+
 - Re-migrate & re-init DB:
 ```
     $ python manage.py migrate
+
 ```
 [^](#table-of-content)
+
+
 
 ### Create App
 - An App is a subdirectory of a project.
@@ -141,7 +172,7 @@
     INSTALLED_APPS = [
         'django.contrib.admin',
         ...,
-        'myApp',
+        'app-name',
     ]
 ```
 
@@ -155,6 +186,7 @@
 - Add new App to url in <project/url.py>
 
 [^](#table-of-content)
+
 
 ### Configure Settings
 ##### Static files
@@ -179,8 +211,9 @@
     ALLOWED_HOSTS =python manage.py runserver 0.0.0.0:8080 ['127.0.0.1', '<your_username>.pythonanywhere.com']
     ALLOWED_HOSTS = ['127.0.0.1',https://django-username.c9users.io]
 ```
+[^](#table-of-content)
 
-#### Database
+### Database Settings
 ```
     - default sqlite2 settings:
     DATABASES = {
@@ -201,6 +234,8 @@
         }
 ```
 [^](#table-of-content)
+
+
 # Django Files and Components
 ```
     $ tree <project path>
@@ -239,12 +274,16 @@ https://docs.djangoproject.com/en/2.0/ref/django-admin/
 - sets DJANGO_SETTINGS_MODULE env variables to point to settings.py file
 
 ### settings.py
-- All settings / configuration are placed here https://docs.djangoproject.com/en/2.0/topics/settings/
+https://docs.djangoproject.com/en/2.0/topics/settings/
+- All settings / configuration are placed here
+
+### wsgi.py
+- Entry point for WSGI compatible web servers to serve project.
 
 ### urls.py
-- Definition for urls in project and links to function-based-views / class-based-views
-- https://docs.djangoproject.com/en/2.0/topics/http/urls/
-- format:
+https://docs.djangoproject.com/en/2.0/topics/http/urls/
+- Definition for urls in project and links to function-based-views / class-based-views in created Apps.
+- Format:
 ```
     - required args :
         - regex : URL patterns to match
@@ -268,7 +307,11 @@ https://docs.djangoproject.com/en/2.0/ref/django-admin/
         url(r'^admin/', admin.site.urls),
         url(r'', include('myApp.urls')),
 ```
-- App level file(manually create) will tore the link for url with views specific for the app :
+[^](#table-of-content)
+
+## App Files
+### urls.py
+- App level file(manually create) will store the link for url with views specific for the app :
 ```
     from django.conf.urls import url
     from . import views
@@ -278,10 +321,8 @@ https://docs.djangoproject.com/en/2.0/ref/django-admin/
     ]
 ```
 
-### models.py
-- Model field types : (https://docs.djangoproject.com/en/2.0/ref/models/fields/#field-types).
-- Defines the database structure and relationship
-- To use django admin interface with models, register the models in `admin.py`:
+### admin.py
+- Include models defined in models.py and register to be visible on the admin page (will automatically creates django admin interface with defined models)
 ```
     from django.contrib import admin
     from .models import ModelClass1, ModelClass2
@@ -290,12 +331,22 @@ https://docs.djangoproject.com/en/2.0/ref/django-admin/
     admin.site.register(ModelClass1)
     admin.site.register(ModelClass2)
 ```
+
+### models.py
+- Model field types : (https://docs.djangoproject.com/en/2.0/ref/models/fields/#field-types).
+- Defines the database structure and relationship
 - Everytime changes are made to models.py, run the migration command to update the database schema.
+
 
 ### views.py
 - https://docs.djangoproject.com/en/2.0/topics/http/views/
 - A view retrieves data from `models.py` according to the parameters, loads a template and renders the `template` with the retrieved data.
-- Inputs `request` and returns `render` function that renders the defined template. Either returns `HttpResponse` object containing the content for requested page, or raising an execption such as `Http404`
+```
+    Inputs  : A request
+    Outputs : A (response) render function that renders the defined template (myApp/<url-name>.html).
+              Either returns `HttpResponse` object containing the content for requested page, or raising an execption such as `Http404`
+```
+- Example:
 ```
     from django.views.generic import ListView, DetailView, TemplateView
     from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -308,7 +359,9 @@ https://docs.djangoproject.com/en/2.0/ref/django-admin/
     class ModelListView(ListView):
         model = ModelClass
 ```
-#### Function Based Views
+[^](#table-of-content)
+
+## Function Based Views
 In views.py:
 ```
     def contact(request):
@@ -326,7 +379,7 @@ In urls.py:
 ```
 
 
-#### Class Based Views
+## Class Based Views
 In views.py:
 ```
     class ContactView(View):
@@ -343,42 +396,12 @@ In urls.py:
         url(r'contact/$', views.ContactView.as_view(), name='contact')
     ]
 ```
-#### Generic Based Views
+
+## Generic Based Views
 - Django generic views have predefined template name that is expected. Name is derived from model name : `modelname_list.html`
 - By default will look for templates in applications and template dir specified in settings.TEMPLATE_DIRS.
 
 [^](#table-of-content)
-
-## Querysets
-- A QuerySet is a list of objects of a given Model.
-- https://docs.djangoproject.com/en/2.0/ref/models/querysets/
-- In console shell:
-```
-    $ from myApp.models import ModelClass
-    $ qs = ModelClass.objects.all()
-    $ qs = ModelClass.objects.all().values().order_by('id')
-```
-
-- Other commands to query data from db:
-```
-    $ qs = Product.objects.filter(title__contains='abc')
-    $ qs = Product.objects.filter(title__icontains='shirt', description__iexact='Abc') #case insensitive
-    $ qs = Product.objects.filter(id=4)
-    $ qs = Product.objects.get(id=3)
-    $ qs = self.get_queryset().filter(id=id)
-```
-
-- Import Users from DB
-```
-    $ from django.contrib.auth.models import User
-    $ User.objects.all()
-```
-
-- Objects are created from classes in myApp.models.py
-```
-    $ <model-class-name>.objects.create(...)
-```
-[^](#overview)
 
 ## Templates
 - Template extending to re-use HTML for different pages with different models, views, etc.
@@ -417,17 +440,44 @@ In urls.py:
 [^](#table-of-content)
 
 
-### Other files
-#### __init__.py
-- Declaration dir should be considered a Python package (https://docs.python.org/3/tutorial/modules.html#tut-packages)
+# Django Models
+## QuerySet
+- A QuerySet is a list of objects of a given Model.
+- https://docs.djangoproject.com/en/2.0/ref/models/querysets/
+- In console shell import:
+```
+    $ from myApp.models import ModelClass
+```
 
-#### wsgi.py
-- An entry-point for WSGI-compatible web servers to serve your project. See How to deploy with WSGI for more details.
-- https://docs.djangoproject.com/en/2.0/howto/deployment/wsgi/
+## Query objects
+- Basic query for all objects
+```
+    $ qs = ModelClass.objects.all()
+    $ qs = ModelClass.objects.all().values().order_by('id')
+```
 
+- Other commands to query data from db:
+```
+    $ qs = Product.objects.filter(title__contains='abc')
+    $ qs = Product.objects.filter(title__icontains='shirt', description__iexact='Abc') #case insensitive
+    $ qs = Product.objects.filter(id=4)
+    $ qs = Product.objects.get(id=3)
+    $ qs = self.get_queryset().filter(id=id)
+```
+
+- Import Users from DB
+```
+    $ from django.contrib.auth.models import User
+    $ User.objects.all()
+```
+
+- Objects are created from classes in myApp.models.py
+```
+    $ <model-class-name>.objects.create(...)
+```
 [^](#table-of-content)
 
-### Misc
+# Misc
 ### Additional python libraries to use:
 #### pillow
 - For ImageField control that checks if file used is an image file
@@ -443,7 +493,7 @@ In urls.py:
 [^](#table-of-content)
 
 
-### Errors
+# Errors
 ```
     "django_session" does not exist
 ```
@@ -453,4 +503,4 @@ In urls.py:
     $ python manage.py syncdb
     $ python manage.py migrate sessions
 ```
-
+[^](#table-of-content)
