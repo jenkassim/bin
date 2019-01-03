@@ -1,5 +1,8 @@
 # Docker
 # Table of Content
+
+## Installation
+
 ## Create Docker Environment
 - [Start up service](#start-up-service)
 - [Create Dockerfile](#create-dockerfile)
@@ -16,9 +19,6 @@
 ## Services
 - [Docker Compose](#docker-compose)
 - [Run Docker Compose](#run-docker-compose)
-- [Storage driver](#storage-driver)
-- [Data Volumes](#data-volumes)
-- [Bind Mounts](#bind-mounts)
 
 ## Clean up Docker Environment
 - [Clean-up Docker entirely and start fresh](#cleanup-to-freshstart)
@@ -26,12 +26,32 @@
 - [Prune Images](#prune-images)
 - [Prune Everything](#prune-everything)
 
+## Images & Layers
+
+## [Storage Drivers](#Storage-Drivers)
+
+## [Data Volumes](#data-volumes)
+## [Bind Mounts](#bind-mounts)
+
+
+- Docker representation :
+    - Docker Image == Class
+    - Docker Container == Instance
 
 `/var/lib/docker/image/devicemapper/imagedb/content/sha256`
 - Location of files stored on host : ` /var/lib/docker `
 - Docker Image is an inert, immutable file that's a snapshot of a container.
 - Image are created with the `build` command and produces a container when started with `run`.
 - Images are bound to containers, so remove containers before removing images
+
+# Installation
+- https://docs.docker.com/docker-for-mac/install/
+- https://docs.docker.com/docker-for-windows/install/
+- https://docs.docker.com/toolbox/toolbox_install_mac/
+- https://docs.docker.com/toolbox/toolbox_install_windows/
+- https://docs.docker.com/engine/installation/linux/centos/
+- https://docs.docker.com/engine/installation/linux/fedora/
+- https://docs.docker.com/engine/installation/linux/linux-postinstall/
 
 # Create Docker Environment
 ## Start up service
@@ -79,6 +99,7 @@ CMD ["python", "app.py"]
 - Be in the directory level that has Dockerfile, requirements.txt and app files
 ```
    $ docker build -t <image-name> <dir-to-Dockerfile>
+   $ docker build -t <image-name> -f <docker-filename> <directory>
 ```
 
 - Check built images
@@ -194,6 +215,10 @@ CMD ["python", "app.py"]
 ```
    $ docker container rm <hash>
 ```
+- View size of running container
+```
+    $ docker ps -s
+```
 
 ## Image Commands
 - Built Images can be exported to run it elsewhere.
@@ -203,10 +228,10 @@ CMD ["python", "app.py"]
     $ docker image ls -a
 ```
 
-- Inspect images
+- Inspect images and layers within image
 ```
     $ docker inspect <tag or id>
-    $ docker history <image-id>:latest
+    $ docker history <image-id>
 ```
 
 ##### Repository Images
@@ -386,29 +411,7 @@ CMD ["python", "app.py"]
 ##### Depends_on
 - Start services in dependency order. All Depends_on services will be created / started before its own service.
 
-## Images and layers
-- Image is built up from series of layers, each layer represents an instruction in image Dockerfile.
-- New container adds a writeable layer on top of the underlying image layers, called "container layer". Any changes made to running container ( add / modify / delete files) are written to the container layer.
-- Deleting a container removes the container layer but the underlying image remains unchanged.
-- Each container has its own container layer, multiple containers can share access to the same underlying image and have their own data state.
 
-- Get approx size of container
-```
-    $ docker ps -s
-    [
-        size         : on disk used for writable layer of each container
-        virtual size : read-only image data used by container + writeable layer size
-    ]
-```
-
-### Storage driver
-https://docs.docker.com/storage/storagedriver/
-- A storage driver handles the details about the way these layers interact with each other.
-- Each layer stored in its own directory in host local storage aread : `/var/lib/docker/<storage-drive>/layers/`
-
-- Only files to be modified will be copied into the writeable layers. When files in container is modified, the storage driver performs a `copy-on-write` operation.
-
-- For write-heavy apps, do not store data in container, instead use Docker volumes which are independent on the running container.
 
 
 ### Data Volumes (DV)
@@ -523,3 +526,34 @@ https://docs.docker.com/engine/admin/volumes/bind-mounts/#start-a-container-with
     $ docker system prune
     $ docker system prune --volumes
 ```
+
+# Images & Layers
+- Image built up from series of layers, each layer represents an instruction in the image's dockerfile(`image layers`).
+- Layers stacked on top of each other and only differs each by one set of instructions.
+```
+    FROM ubuntu:15.04
+    COPY . /app
+    RUN make /app
+    CMD python /app/app.py
+```
+    `From` - Creates a layer from
+    `Copy` - Adds files from your Docker client's current directory
+    `Run`  - Builds application using `make` command
+    `Cmd`  - What command to run within the container
+
+# Containers & Layers
+- Each container has a `writable layer` on top of other instructions layers, called the `container layer`. Stores changes (data state) to it's own container (ie writing new files, modifying existing files, deleting files)
+- `Writeable Layer` removes when container is deleted.
+
+## Storage Drivers
+https://docs.docker.com/storage/storagedriver/
+- Manages contents of `image layer` and `writable container layer` and how they interact together.
+- Allows to create data in the `writeable layer` of the container. Files won't be persisted after container is deleted and both read and write speeds are low.
+- Each layer stored in its own directory in host local storage aread : `/var/lib/docker/<storage-drive>/layers/`
+- List contents of local storage area
+```
+    $ sudo ls /var/lib/docker/containers
+```
+
+# Reference
+- https://docs.docker.com/storage/storagedriver/
