@@ -10,11 +10,13 @@
 - [Create / Build an Image](#create-/-build-an-image)
 - [Check running host services](#check-running-host-services)
 - [Check status](#check-status)
+- [Tagging](#tagging)
 
 ## Running Docker
 - [Run the container](#run-the-container)
 - [Container Commands](#container-commands)
 - [Image Commands](#image-commands)
+- [Environment Arguments](#env-arguments)
 
 ## Services
 - [Docker Compose](#docker-compose)
@@ -52,6 +54,24 @@
 - https://docs.docker.com/engine/installation/linux/centos/
 - https://docs.docker.com/engine/installation/linux/fedora/
 - https://docs.docker.com/engine/installation/linux/linux-postinstall/
+
+# Login
+```
+    $ docker login
+```
+- Saves user auth to : `~/.docker/config.json`
+- Windows : `%USERPROFILES%/.docker/config.json`
+
+- Tag docker image to user account
+```
+    $ docker image tag <image-name> <username>/<image-tage>:<version-tag>
+```
+
+- Push to docker repo
+```
+    $ docker image push <username>
+```
+
 
 # Create Docker Environment
 ## Start up service
@@ -98,7 +118,7 @@ CMD ["python", "app.py"]
 ## Create / Build an Image
 - Be in the directory level that has Dockerfile, requirements.txt and app files
 ```
-   $ docker build -t <image-name> <dir-to-Dockerfile>
+   $ docker image build -t <image-name>:<tag-version> <dir-to-Dockerfile>
    $ docker build -t <image-name> -f <docker-filename> <directory>
 ```
 
@@ -107,6 +127,27 @@ CMD ["python", "app.py"]
     $ docker images
     or
     $ docker image ls -a
+    or
+    $ docker image inspect <image-name>
+```
+
+- When building images, docker will create an individual docker layer for each step.
+- This layers will be stored as cache for subsequent builds with same layer requirements.
+```
+    Step 3/8 : WORKDIR /app
+    ---> Running in 091262a89e39
+    Removing intermediate container 091262a89e39
+```
+
+- Changes to Dockerfile, will re-build changed layer commands and all layers after it.
+
+## Push to DockerHub
+- Login to dockerhub, authentication stored in config.json file
+- Push and pull from dockerhub:
+```
+    $ docker login
+    $ docker image push <username>/<image-name>
+    $ docker pull <username>/<image-name>:<tag-name>
 ```
 
 ## Cleanup to freshstart
@@ -152,6 +193,12 @@ CMD ["python", "app.py"]
     $ docker image ls -a
     $ docker images
 ```
+## Tagging
+- Re-tag images with a different name
+```
+    $ docker image tag <tag-name> <new-tag-name>
+    $ docker image tag jenkassim/web1 web1
+```
 
 # Running Docker
 ## Run the container
@@ -166,6 +213,17 @@ CMD ["python", "app.py"]
     - Run app with volume connected
     $ docker run -d -p 8888:8888 -v <host-directory>:<container-directory>
 ```
+- Use `container run` if used with management tags / flags.
+```
+    $ docker container run -it -p <by-port-on-dockerhost>:<by-port-on-docker-container><docker-image>
+
+    $ docker container run -it -p 5000:5000 -e FLASK_APP=app.py web1
+```
+- `by-port-on-docker-container` should match the App port declared in Dockerfiles.
+- On windows system (Docker Toolbox), need to use Docker Machine IP which is used instead of localhost
+```
+    $ docker-machine ip
+```
 
 - Content served in web page: http://0.0.0.0:80 or http://localhost:4000
 
@@ -173,6 +231,16 @@ CMD ["python", "app.py"]
 `
     $ curl http://localhost:4000
 `
+
+| Run commands | Syntax | Usage |
+--------------|--------|-------|
+| `-e` | Define input parameter (environment variable) in container | $ docker container run -p 5000:5000 -e FLASK_APP=app.py |
+| `-it` | Run container interactively with terminal usage | $ docker container run -it -p 5000:5000 |
+| `-rm` | Immediately remove container after it's been stopped | $ docker container run -it -rm -p 5000:5000 |
+| `-d` | Run container in background | $ docker container run -it -d -p 5000:5000 |
+| `--name` | Declare name for container | $ docker container run -p 5000:5000 --name web1 |
+| `-v` | Defines Path on host:Path where the files will be mounted on the container. Mount current working directory into the `app` folder in the container| $ docker container run -p 5000:5000 -v $PWD:/app web1 |
+| `--user` | Run as specific users (files created as user instead of root) | $ docker container exec --user "$(id -u):$(id -g)" web1 touch abc.txt|
 
 ## Container Commands
 - Containers are instances of an image (runtime object) and encapsulates an environment to run apps.
@@ -286,6 +354,11 @@ CMD ["python", "app.py"]
 `
     $ docker image prune -a
 `
+
+## Environment Variables
+
+
+
 
 
 ## Services
@@ -421,6 +494,7 @@ https://docs.docker.com/storage/volumes/
 - Multiple DV can be mounted into a single container
 - Multiple containers can share one or more DV.
 - Location of DV are outside host local storage area
+- If source code is not on a volume, Docker layer will need to be re-built everytime there's code changes to be reflected. This is if the source code is copied into the Dockerfile / yml file.
 
 ### Start a container with a volume
 - If start container wihout existing volume, Docker will auto create it.
